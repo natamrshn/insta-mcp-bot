@@ -4,9 +4,12 @@ from llm.call_llm import call_llm
 
 def parse_intent_llm(user_id, chat_histories):
     prompt = (
-        "Проаналізуй повідомлення користувача і поверни назву інтенції з цього списку (show_staff_list, show_service_list, book, other) одним словом без коментарів. "
-        "Приклад: Якщо користувач хоче побачити список майстрів, поверни show_staff_list."
-    )
+    "Проаналізуй повідомлення користувача і поверни назву інтенції з цього списку "
+    "(show_staff_list, show_service_list) одним словом без коментарів. "
+    "Приклад: Якщо користувач хоче побачити список майстрів, поверни show_staff_list. "
+    "Якщо користувач питає про перелік послуг або питає 'Що ви робите?', поверни show_service_list."
+)
+
     messages = chat_histories[user_id][:]
     messages.append({"role": "system", "content": prompt})
     intent = call_llm(user_id, {user_id: messages}, temperature=0)
