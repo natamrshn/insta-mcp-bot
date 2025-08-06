@@ -12,8 +12,9 @@ def parse_intent_llm(user_id, chat_histories):
     intent = call_llm(user_id, {user_id: messages}, temperature=0)
     return intent.strip().split()[0] if intent else "other"
 
-def handle_intent(cl, msg, chat_histories, answered_messages, answered_msgs_file, mcp_url):
+def handle_intent(cl, msg, chat_histories, last_processed_per_chat, last_processed_file, mcp_url):
     user_id = msg.user_id
+    chat_id = getattr(msg, "thread_id", None) or getattr(msg, "chat_id", None) or msg.user_id
     message_id = msg.id
     user_message = msg.text.strip()
 
@@ -37,11 +38,7 @@ def handle_intent(cl, msg, chat_histories, answered_messages, answered_msgs_file
     try:
         sent_msg = cl.direct_send(reply, [user_id])
         print(f"[ОТПРАВЛЕНО] user_id={user_id}, msg_id={message_id} → {reply}")
-        answered_messages.add(message_id)
-        from utils.state import save_answered
-        save_answered(answered_msgs_file, answered_messages)
-        # Важно: возвращаем id отправленного сообщения, если нужно отслеживать в будущем!
-        return getattr(sent_msg, 'id', None)
+        return True  # Сообщение успешно отправлено
     except Exception as e:
         print("❗️Ошибка отправки в Direct:", e)
-        return None
+        return False
